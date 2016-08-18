@@ -27,7 +27,7 @@ def createTree(dataSet,minSup=1):
     #dataSet的键是frozenSet,第一次扫描数据集
     for T in dataSet:
         for item in T:
-            headerTable[item]=headerTable.get(item,0)+1
+            headerTable[item]=headerTable.get(item,0)+dataSet[T]
 
     #去掉不满足最小支持度的item
     for k in headerTable.keys():
@@ -46,7 +46,8 @@ def createTree(dataSet,minSup=1):
 
     # print headerTable
     #第二次扫描数据集
-    for tranSet in dataSet:
+    dataSet_tuple=dataSet.items()
+    for tranSet,count in dataSet_tuple:
         #tranSet是一条记录,用得是frozenset存储
         localD={}
         for item in tranSet:
@@ -56,7 +57,7 @@ def createTree(dataSet,minSup=1):
         if len(localD)>0:
             #将localD按照item出现次数从高到低排序,并存储在列表中
             orderedItems = [v[0] for v in sorted(localD.items(),key = lambda p:p[1],reverse = True)]
-            insert_treeNode(orderedItems,retTree,headerTable,1)
+            insert_treeNode(orderedItems,retTree,headerTable,count)
             #这里其实是向根节点中插入新节点,但是和二叉树的创建不一样,因为这里插入子节点不返回地址,因为不想二叉树有特定的左指针和右指针
     return retTree,headerTable
 

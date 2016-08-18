@@ -1,15 +1,19 @@
 #conding=utf-8
 def loadSimpData():
-    simpDat = [['r', 'z', 'h', 'j', 'p'],
-               ['z', 'y', 'x', 'w', 'v', 'u', 't', 's'],
-               ['z'],
-               ['r', 'x', 'n', 'o', 's'],
-               ['y', 'r', 'x', 'z', 'q', 't', 'p'],
-               ['y', 'z', 'x', 'e', 'q', 's', 't', 'm']]
+    simpDat = [['a','b','e'],
+               ['b','d'],
+               ['b','c'],
+               ['a', 'b', 'd'],
+               ['a', 'c'],
+               ['b', 'c'],
+               ['a','c'],
+               ['a','b','c','e'],
+               ['a','b','c']]
     return simpDat
 
 def createInitSet():
     dataSet=loadSimpData()
-    for x in xrange(len(dataSet)):
-        dataSet[x]=frozenset(dataSet[x])
-    return dataSet
+    retDict={}
+    for Tid in dataSet:
+        retDict[frozenset(Tid)]=1
+    return retDict
