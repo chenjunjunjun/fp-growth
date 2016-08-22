@@ -25,19 +25,27 @@ def ascendTree(treeNode, prefixPath): #找当前节点到根节点的路径(从�
 #         newFreqSet = preFix.copy()
 #         newFreqSet.add(basePat)
 #         freqItemList.append(newFreqSet)
+#         print newFreqSet
 #         condPattBases = findPrefixPath(basePat, headerTable[basePat][1])
 #         myCondTree, myHead = createTree(condPattBases, minSup)
 #         if myHead != None:
 #             mineTree(myCondTree, myHead, minSup, newFreqSet, freqItemList)
 
-def mineTree(FPtree, headerTable, minSup, preFix, freqItemList):
-    print headerTable
+def mineTree(FPtree, headerTable, minSup, preFix, freqItemDict):
+    #minSup:支持度,freqItemList:频繁项集存放的地方,FPtree:构建的FP树,headerTable:FP树对应的头表
     bigL = [v[0] for v in sorted(headerTable.items(), key=lambda p: p[1])]
     for basePat in bigL:
         newFreqSet = preFix.copy()
         newFreqSet.add(basePat)
-        freqItemList.append(newFreqSet)
+        # print newFreqSet
+        #记录每个频繁项的支持度计数
+        if frozenset(newFreqSet) in freqItemDict:
+            freqItemDict[frozenset(newFreqSet)]+=headerTable[basePat][0]
+        else:
+            freqItemDict[frozenset(newFreqSet)]=headerTable[basePat][0]
+        # print newFreqSet,freqItemDict[frozenset(newFreqSet)]
+
         condPattBases = findPrefixPath(basePat, headerTable[basePat][1])
-        myCondTree, myHead = createTree(condPattBases, minSup)
+        myCondTree,myHead = createTree(condPattBases, minSup)
         if myHead != None:
-            mineTree(myCondTree, myHead, minSup, newFreqSet, freqItemList)
+            mineTree(myCondTree, myHead, minSup, newFreqSet, freqItemDict)

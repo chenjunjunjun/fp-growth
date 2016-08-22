@@ -1,19 +1,17 @@
 #conding=utf-8
+
 def loadSimpData():
-    simpDat = [['a','b','e'],
-               ['b','d'],
-               ['b','c'],
-               ['a', 'b', 'd'],
-               ['a', 'c'],
-               ['b', 'c'],
-               ['a','c'],
-               ['a','b','c','e'],
-               ['a','b','c']]
+    simpDat=[]
+    fileIn=open('itemsSet.txt')
+    for line in fileIn.readlines():
+        lineArr=line.strip().split(',')
+        simpDat.append(lineArr)
+    fileIn.close()
+
     return simpDat
 
-def createInitSet():
-    dataSet=loadSimpData()
+def createInitSet(dataSet):
     retDict={}
     for Tid in dataSet:
-        retDict[frozenset(Tid)]=1
+        retDict[frozenset(Tid)]=retDict.get(frozenset(Tid),0)+1
     return retDict

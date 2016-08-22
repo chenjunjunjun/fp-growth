@@ -3,7 +3,7 @@ class treeNode:
     def __init__(self,nameValue,numOccur,parentNode):
         #节点名称
         self.name=nameValue
-        #节点在该路径出现次数
+        #节点在该路径总共出现次数
         self.count=numOccur
         #nodeLink:下一个同名节点的地址,构成整个头表的链,方便对FP树的快速访问
         self.nodeLink=None
@@ -16,10 +16,7 @@ class treeNode:
         self.count+=numOccur
 
     #fp树的展示
-    def disp(self,ind=1):
-        print ' '*ind,self.name,' ',self.count
-        for child in self.children.values():
-            child.disp(ind+1)
+    # def disp(self,ind=1):
 
 def createTree(dataSet,minSup=1):
     '''头指针表'''
