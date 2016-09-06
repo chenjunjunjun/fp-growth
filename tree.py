@@ -19,7 +19,10 @@ class treeNode:
     # def disp(self,ind=1):
 
 def createTree(dataSet,minSup=1):
-    '''头指针表'''
+    '''
+    头指针表:FP-growth算法还需要一个称为头指针表的数据结构，其实很简单，就是用来记录各个元素项的总出现次数的数组，
+    再附带一个指针指向FP树中该元素项的第一个节点。这样每个元素项都构成一条单链表
+    '''
     headerTable={}
     #dataSet的键是frozenSet,第一次扫描数据集
     for T in dataSet:
@@ -38,10 +41,12 @@ def createTree(dataSet,minSup=1):
 
     for k in headerTable:
         headerTable[k]=[headerTable[k],None]
-    #最后,头表节点的数据结构为:item:[item出现次数,下一个节点的地址],看看人家是如何设计的节点,可以借鉴
-    retTree=treeNode('Null Set',1,None)
-
+    #最后,头表节点的数据结构为:item:[item出现次数,FP树中该元素的第一个节点地址],初始化为空,创建树的时候会进行赋值.看看人家是如何设计的节点,可以借鉴
+    #这里使用Python里面的数据字典作为数据结构,来保存头表指针
     # print headerTable
+
+    #其实就是将一条记录中满足支持度的商品筛选出来,排序后,按顺序插入到一个树中,并更新头表
+    root=treeNode('Null Set',1,None)
     #第二次扫描数据集
     dataSet_tuple=dataSet.items()
     for tranSet,count in dataSet_tuple:
@@ -52,30 +57,29 @@ def createTree(dataSet,minSup=1):
                 localD[item]=headerTable[item][0]
         #localD中存放是tranSet中大于minSup元素的key和在dataSet中出现的次数,是一个key-value
         if len(localD)>0:
-            #将localD按照item出现次数从高到低排序,并存储在列表中
-            orderedItems = [v[0] for v in sorted(localD.items(),key = lambda p:p[1],reverse = True)]
-            insert_treeNode(orderedItems,retTree,headerTable,count)
+            orderedItems = [v[0] for v in sorted(localD.items(),key = lambda p:p[1],reverse = True)] #将localD按照item出现次数从高到低排序,并存储在orderedItems中
+            insert_treeNode(orderedItems,root,headerTable,count)
             #这里其实是向根节点中插入新节点,但是和二叉树的创建不一样,因为这里插入子节点不返回地址,因为不想二叉树有特定的左指针和右指针
-    return retTree,headerTable
+    return root,headerTable
 
 
-def insert_treeNode(items, inTree, headerTable, count):
-    #items:要插入的对象,inTree:要插入的节点,headerTable:因为插入时需要更新头节点,所以传入
+def insert_treeNode(items, into_treeNode, headerTable, count):
+    #items:要插入的一条记录(item组成的一个排序好的序列),inTree:要插入的节点,headerTable:因为插入时需要更新头节点,所以传入
 
     #每次插入的是items的第一个item,因为它出现的频率最高
-    if items[0] in inTree.children:
-        inTree.children[items[0]].inc(count)
+    if items[0] in into_treeNode.children:
+        into_treeNode.children[items[0]].inc(count)
     else:
-        inTree.children[items[0]] = treeNode(items[0], count, inTree) #初始化要插入节点,并插入到当前节点
+        into_treeNode.children[items[0]] = treeNode(items[0], count, into_treeNode) #初始化要插入节点,并插入到当前节点
 
         #更新头表,headerTable的value值第二项是记录每个节点子节点地址
         if headerTable[items[0]][1] == None:
-            headerTable[items[0]][1] = inTree.children[items[0]]
+            headerTable[items[0]][1] = into_treeNode.children[items[0]]
         else:
-            updateHeader(headerTable[items[0]][1], inTree.children[items[0]])
-    #插入items剩下的item
-    if len(items) > 1:
-        insert_treeNode(items[1:], inTree.children[items[0]], headerTable, count)
+            updateHeader(headerTable[items[0]][1], into_treeNode.children[items[0]]) #headerTable[items[0]][1]其实是一个树节点
+
+    if len(items) > 1: #插入记录/序列中剩下的item,这个思路还是好明白的吧
+        insert_treeNode(items[1:], into_treeNode.children[items[0]], headerTable, count) #此时插入的的位置从into_treeNode.children[items[0]]开始了
 
 def updateHeader(nodeToTest, targetNode):
     while (nodeToTest.nodeLink != None):
