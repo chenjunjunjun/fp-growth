@@ -13,5 +13,5 @@ if __name__=='__main__':
 
     freqDict={}
     mineTree(FPtree,HeaderTab,2,set([]),freqDict)
-    # for item in freqDict:
-    #     print item,freqDict[item]
+    for item in freqDict:
+        print item,freqDict[item]
