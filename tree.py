@@ -15,20 +15,19 @@ class treeNode:
     def inc(self,numOccur):
         self.count+=numOccur
 
-    #fp树的展示
-    # def disp(self,ind=1):
 
-def createTree(dataSet,minSup=1):
+
+def createTree(dataSet,minSup=2):
     '''
-    头指针表:FP-growth算法还需要一个称为头指针表的数据结构，其实很简单，就是用来记录各个元素项的总出现次数的数组，
-    再附带一个指针指向FP树中该元素项的第一个节点。这样每个元素项都构成一条单链表
+    头指针表:FP-growth算法还需要头表，存储每个节点链的第一个节点地址，每个节点通过nodeLink指向下一个节点，
+    这样就构成一个单链表
     '''
     headerTable={}
-    #dataSet的键是frozenSet,第一次扫描数据集
+    #dataSet的键是frozenSet,第一次扫描数据集，过滤掉非频繁项，得到频繁1项集，同时需要存储它们出现的次数，因为第二遍扫描记录时，需要根据
+    # 它们出现的次数进行排序
     for T in dataSet:
         for item in T:
             headerTable[item]=headerTable.get(item,0)+dataSet[T]
-
     #去掉不满足最小支持度的item
     for k in headerTable.keys():
         if headerTable[k]<minSup:
@@ -39,15 +38,17 @@ def createTree(dataSet,minSup=1):
     if len(freqItemSet)==0:
         return None,None
 
+    # 初始化头表
     for k in headerTable:
         headerTable[k]=[headerTable[k],None]
-    #最后,头表节点的数据结构为:item:[item出现次数,FP树中该元素的第一个节点地址],初始化为空,创建树的时候会进行赋值.看看人家是如何设计的节点,可以借鉴
-    #这里使用Python里面的数据字典作为数据结构,来保存头表指针
+    #最后,头表节点的数据结构为:item:[item出现次数,FP树中该元素的第一个节点地址],初始化为空,创建树的时候会进行赋值，这就实现了头表的功能.
+    #这里通过字典的value值是一个列表，列表的第一个值相当于链表的值，第二值相当于指向下一个节点的指针，这种方法很巧妙
+    # 是不是C种的链表在python种可以通过字典来模拟实现呢？
     # print headerTable
 
     #其实就是将一条记录中满足支持度的商品筛选出来,排序后,按顺序插入到一个树中,并更新头表
-    root=treeNode('Null Set',1,None)
-    #第二次扫描数据集
+    root=treeNode('Null Set',0,None)
+    #第二次扫描数据集，对每一条记录排序，构建fp树
     dataSet_tuple=dataSet.items()
     for tranSet,count in dataSet_tuple:
         #tranSet是一条记录,用得是frozenset存储
@@ -59,14 +60,18 @@ def createTree(dataSet,minSup=1):
         if len(localD)>0:
             orderedItems = [v[0] for v in sorted(localD.items(),key = lambda p:p[1],reverse = True)] #将localD按照item出现次数从高到低排序,并存储在orderedItems中
             insert_treeNode(orderedItems,root,headerTable,count)
-            #这里其实是向根节点中插入新节点,但是和二叉树的创建不一样,因为这里插入子节点不返回地址,因为不想二叉树有特定的左指针和右指针
+            #这里其实是向根节点中插入新节点,但是和二叉树的创建不一样,因为这里插入子节点不返回地址,因为不像二叉树有特定的左指针和右指针
     return root,headerTable
 
 
+'''构建fp树分两步:
+1.插入树节点
+2.更新头表
+'''
 def insert_treeNode(items, into_treeNode, headerTable, count):
-    #items:要插入的一条记录(item组成的一个排序好的序列),inTree:要插入的节点,headerTable:因为插入时需要更新头节点,所以传入
+    #items:待插入的节点序列(已经排好序),into_treeNode:插入节点的位置,headerTable:因为插入时需要更新头节点,所以传入
 
-    #每次插入的是items的第一个item,因为它出现的频率最高
+    #每次插入的是items的第一个item,它出现的频率最高，接下来插入的是第二高的,依次类推
     if items[0] in into_treeNode.children:
         into_treeNode.children[items[0]].inc(count)
     else:
@@ -78,7 +83,7 @@ def insert_treeNode(items, into_treeNode, headerTable, count):
         else:
             updateHeader(headerTable[items[0]][1], into_treeNode.children[items[0]]) #headerTable[items[0]][1]其实是一个树节点
 
-    if len(items) > 1: #插入记录/序列中剩下的item,这个思路还是好明白的吧
+    if len(items) > 1: #插入序列中剩下的item，这里用递归非常方便，也好理解
         insert_treeNode(items[1:], into_treeNode.children[items[0]], headerTable, count) #此时插入的的位置从into_treeNode.children[items[0]]开始了
 
 def updateHeader(nodeToTest, targetNode):
