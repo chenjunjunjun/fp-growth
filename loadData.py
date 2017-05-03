@@ -3,7 +3,7 @@
 def loadSimpData():
     simpDat=[]
     fileIn=open('itemsSet.txt')
-    for line in fileIn.readlines():
+    for line in fileIn:
         lineArr=line.strip().split(',')
         simpDat.append(lineArr)
     fileIn.close()
