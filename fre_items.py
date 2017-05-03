@@ -52,7 +52,7 @@ def ascendTree(treeNode, prefixPath): #找当前节点到根节点的路径(从�
 3.基于这些条件FP树找频繁项集
 '''
 def mineTree(FPtree, headerTable, minSup, preFix, freqItemDict):
-    #minSup:支持度,freqItemDict:频繁项集存放的地方,preFix:该项的前缀,FPtree:构建的FP树,headerTable:FP树对应的头表
+    #minSup:支持度,freqItemDict:频繁项集存放的地方,preFix:该项的前缀,FPtree:构建的FP树,headerTable:FP树对应的头表,
     bigL = [v[0] for v in sorted(headerTable.items(), key=lambda p: p[1])]  #从频次出现低项开始挖掘
     for basePat in bigL:
         newFreqSet = preFix.copy()
