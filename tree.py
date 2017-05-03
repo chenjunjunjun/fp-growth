@@ -18,13 +18,16 @@ class treeNode:
 
 
 def createTree(dataSet,minSup=2):
+    # 首先我们思考一下创建FP树的过程
+
     '''
-    头指针表:FP-growth算法还需要头表，存储每个节点链的第一个节点地址，每个节点通过nodeLink指向下一个节点，
-    这样就构成一个单链表
+    一般我们分两步：
+    第一步:先扫描一遍数据集,过滤掉非频繁项，得到频繁1项集,同时需要存储它们出现的次数,因为第二遍扫描记录时，需要根据
+    第二步:再一次扫描数据集，对每一条记录，去掉非频繁项，然后对记录中的项按出现次数从高到底排序，然后插入FP树
     '''
+
+    # 第一步
     headerTable={}
-    #dataSet的键是frozenSet,第一次扫描数据集，过滤掉非频繁项，得到频繁1项集，同时需要存储它们出现的次数，因为第二遍扫描记录时，需要根据
-    # 它们出现的次数进行排序
     for T in dataSet:
         for item in T:
             headerTable[item]=headerTable.get(item,0)+dataSet[T]
@@ -38,17 +41,22 @@ def createTree(dataSet,minSup=2):
     if len(freqItemSet)==0:
         return None,None
 
+    '''
+    头指针表:FP-growth算法还需要头表，存储每个节点链的第一个节点地址，每个节点通过nodeLink指向下一个节点，
+    这样就构成一个单链表
+    '''
     # 初始化头表
     for k in headerTable:
         headerTable[k]=[headerTable[k],None]
-    #最后,头表节点的数据结构为:item:[item出现次数,FP树中该元素的第一个节点地址],初始化为空,创建树的时候会进行赋值，这就实现了头表的功能.
+    #到这里,头表节点的数据结构为:item:[item出现次数,FP树中该元素的第一个节点地址],初始化为空,创建树的时候会进行赋值，这就实现了头表的功能.
     #这里通过字典的value值是一个列表，列表的第一个值相当于链表的值，第二值相当于指向下一个节点的指针，这种方法很巧妙
     # 是不是C种的链表在python种可以通过字典来模拟实现呢？
     # print headerTable
 
+    # 第二步
     #其实就是将一条记录中满足支持度的商品筛选出来,排序后,按顺序插入到一个树中,并更新头表
     root=treeNode('Null Set',0,None)
-    #第二次扫描数据集，对每一条记录排序，构建fp树
+    #第二次扫描数据集，对每一条记录先过滤掉非频繁项，后排序，再插入到FP树
     dataSet_tuple=dataSet.items()
     for tranSet,count in dataSet_tuple:
         #tranSet是一条记录,用得是frozenset存储
@@ -58,9 +66,10 @@ def createTree(dataSet,minSup=2):
                 localD[item]=headerTable[item][0]
         #localD中存放是tranSet中大于minSup元素的key和在dataSet中出现的次数,是一个key-value
         if len(localD)>0:
-            orderedItems = [v[0] for v in sorted(localD.items(),key = lambda p:p[1],reverse = True)] #将localD按照item出现次数从高到低排序,并存储在orderedItems中
+            #将localD按照item出现次数从高到低排序,并存储在orderedItems中
+            orderedItems = [v[0] for v in sorted(localD.items(),key = lambda p:p[1],reverse = True)]
+            # 插入到FP树中,每一条记录都是从根节点插入
             insert_treeNode(orderedItems,root,headerTable,count)
-            #这里其实是向根节点中插入新节点,但是和二叉树的创建不一样,因为这里插入子节点不返回地址,因为不像二叉树有特定的左指针和右指针
     return root,headerTable
 
 
@@ -69,7 +78,7 @@ def createTree(dataSet,minSup=2):
 2.更新头表
 '''
 def insert_treeNode(items, into_treeNode, headerTable, count):
-    #items:待插入的节点序列(已经排好序),into_treeNode:插入节点的位置,headerTable:因为插入时需要更新头节点,所以传入
+    #items:待插入的节点序列(已经排好序),into_treeNode:插入节点的位置(其实是插入到该节点的children),headerTable:因为插入时需要更新头节点,所以传入
 
     #每次插入的是items的第一个item,它出现的频率最高，接下来插入的是第二高的,依次类推
     if items[0] in into_treeNode.children:
